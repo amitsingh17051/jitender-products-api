@@ -20,7 +20,7 @@ const PORT = process.env.PORT || 3500;
 
 
 // Get all Products
-app.get('/api/products', (req, res) => {
+app.get('/api/products', async (req, res) => {
     try {
         const product = await Product.find();    
         res.status(200).json({
@@ -34,11 +34,10 @@ app.get('/api/products', (req, res) => {
 })
 
 // Get Single product
-app.get('/api/products/:id', (req, res) => {  
+app.get('/api/products/:id', async (req, res) => {  
     const id = req.params.id;
     try {
         const product = await Product.findById(id);
-        
         res.status(200).json(product);
     } catch (error) {
         res.status(404).json({ message: error.message });
