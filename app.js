@@ -20,49 +20,29 @@ const PORT = process.env.PORT || 3500;
 
 
 // Get all Products
-app.get('/api/products', verifyToken, (req, res) => {
-    jwt.verify(req.token, 'secretkey', async (err,authData) => {
-       if(err) {
-           res.status(403).json({
-               message:err,
-               content: 'hello',
-           })
-       } else {
-           try {
-               
-                const product = await Product.find();    
-                res.status(200).json({
-                    product:product,
-                });
-              
-           } catch (error) {
-               res.status(404).json({ message: error.message,  content: 'hello2', });
-           }
-       }
-   });
-   
+app.get('/api/products', (req, res) => {
+    try {
+        const product = await Product.find();    
+        res.status(200).json({
+            product:product,
+        });
+        
+    } catch (error) {
+        res.status(404).json({ message: error.message,  content: 'hello2', });
+    }
+
 })
 
 // Get Single product
-app.get('/api/products/:id', verifyToken, (req, res) => {
-    jwt.verify(req.token, 'secretkey', async (err,authData) => {
-       if(err) {
-           res.status(403).json({
-               message:err,
-               content: 'hello',
-           })
-       } else {
-           
-            const id = req.params.id;
-            try {
-                const product = await Product.findById(id);
-                
-                res.status(200).json(product);
-            } catch (error) {
-                res.status(404).json({ message: error.message });
-            }
-       }
-   });
+app.get('/api/products/:id', (req, res) => {  
+    const id = req.params.id;
+    try {
+        const product = await Product.findById(id);
+        
+        res.status(200).json(product);
+    } catch (error) {
+        res.status(404).json({ message: error.message });
+    }
 })
 
 
