@@ -128,7 +128,7 @@
                   margin-top: 22px;
                   z-index: 99;
                   ">
-                <button type="submit" class="btn btn-warning mt-3 create_product">
+                <button type="submit" class="btn btn-warning mt-3">
                   Create Product
                  
                 </button>
@@ -201,8 +201,7 @@
       }
     
       function create_product() {
-          jQuery('.create_product').prop('disabled', true)
-          jQuery('.loader').show();
+          jQuery('.btn-warning').prop('disabled', true)
           let title = jQuery('#title').val();
           let category = jQuery('#category').val();
           let priceRange1 = jQuery('#price_range_1').val();
@@ -256,8 +255,6 @@
       }
 
       function update_product(productId) {
-        jQuery('.create_product').prop('disabled', true)
-          jQuery('.loader').show();
           let title = jQuery('#title').val();
           let category = jQuery('#category').val();
           let priceRange1 = jQuery('#price_range_1').val();
