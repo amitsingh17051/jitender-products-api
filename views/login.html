@@ -52,7 +52,8 @@
 
 
   <script>
-
+    const hostname = '';
+    // const hostname = 'http://localhost:3500';
     const login_form = document.getElementById('login_form');
     login_form.addEventListener('submit', function(e) {
         e.preventDefault();
@@ -76,7 +77,7 @@
             body:JSON.stringify(data)
         }
         console.log(options);
-        fetch('http://localhost:3500/login', options);
+        fetch('/login', options);
     }
    
 
