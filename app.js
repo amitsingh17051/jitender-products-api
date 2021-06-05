@@ -124,18 +124,18 @@ app.patch('/api/products/:id',verifyToken, async (req,res) => {
                 const { title, category, priceRange, productImage, productAuthor, minPurchaseQty } = req.body;
                 const id = req.params.id;
                 
-                // const product = await Product.findById(id);
-                // console.log(product.productImag)
-                // if(product.productImage !== undefined) {
-                //     const pathToFile = __dirname + '/uploads/' + product.productImage;
-                //     fs.unlink(pathToFile, function(err) {
-                //     if (err) {
-                //             throw err
-                //         } else {
-                //             console.log("Successfully deleted the file.")
-                //         }
-                //     })
-                // }
+                const product = await Product.findById(id);
+                console.log(product.productImag)
+                if(product.productImage !== undefined) {
+                    const pathToFile = __dirname + '/uploads/' + product.productImage;
+                    fs.unlink(pathToFile, function(err) {
+                    if (err) {
+                            throw err
+                        } else {
+                            console.log("Successfully deleted the file.")
+                        }
+                    })
+                }
 
                 if (!mongoose.Types.ObjectId.isValid(id)) {
                     res.status(404).json({id:id});
@@ -164,17 +164,17 @@ app.delete('/api/products/:id', verifyToken, async (req,res) => {
             try {
                 const id = req.params.id;
                 
-                // const product = await Product.findById(id);
-                // if(product.productImage) {
-                //     const pathToFile = __dirname + '/uploads/' + product.productImage;
-                //     fs.unlink(pathToFile, function(err) {
-                //     if (err) {
-                //             throw err
-                //         } else {
-                //             console.log("Successfully deleted the file.")
-                //         }
-                //     })
-                // }
+                const product = await Product.findById(id);
+                if(product.productImage) {
+                    const pathToFile = __dirname + '/uploads/' + product.productImage;
+                    fs.unlink(pathToFile, function(err) {
+                    if (err) {
+                            throw err
+                        } else {
+                            console.log("Successfully deleted the file.")
+                        }
+                    })
+                }
 
                 if (!mongoose.Types.ObjectId.isValid(id)) return res.status(404).send(`No post with id: ${id}`);
                 await Product.findByIdAndRemove(id);
