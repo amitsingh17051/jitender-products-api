@@ -17,11 +17,18 @@
 
     <style>
 
-        .container {
-           
-           
-            
+      .loader {
+        animation: rotation 4s infinite linear;
+      }
+
+      @keyframes rotation {
+        from {
+          transform: rotate(0deg);
         }
+        to {
+          transform: rotate(359deg);
+        }
+      }
 
         #create_product_form label {
           
@@ -115,7 +122,14 @@
 
                 </div>
                 
-                <button type="submit" class="btn btn-warning mt-3">Create Product</button>
+                <button type="submit" class="btn btn-warning mt-3">
+                  Create Product
+                  <img class="loader" src="https://cdn0.iconfinder.com/data/icons/time-date/24/loading-lines-512.png" width="2%" style="
+                  display: none;
+                  position: absolute;
+                  margin-left: 40px;
+                  ">
+                </button>
                 <button type="button" class="btn btn-success mt-3 reset_from">Reset Form</button>
               </form>
             </div>
