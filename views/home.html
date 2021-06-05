@@ -182,8 +182,7 @@
       jQuery('#create_product_form').on('submit', function(e) {
           e.preventDefault();
 
-          jQuery('.btn-warning').prop('disabled', true);
-          jQuery('.loader').css('display','block');
+          
           let ifProductIdAvl = jQuery('.product_id').val();
           if(ifProductIdAvl !== "") {
             update_product(ifProductIdAvl);
