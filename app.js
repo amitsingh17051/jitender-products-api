@@ -125,6 +125,7 @@ app.patch('/api/products/:id',verifyToken, async (req,res) => {
                 const id = req.params.id;
                 
                 const product = await Product.findById(id);
+                console.log(product.productImag)
                 if(product.productImage !== undefined) {
                     const pathToFile = __dirname + '/uploads/' + product.productImage;
                     fs.unlink(pathToFile, function(err) {
