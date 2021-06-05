@@ -374,11 +374,18 @@ app.get('/', (req, res) => {
 
 })
 
-app.get('/home', async (req, res) => {
+app.get('/home', verifyToken, async (req, res) => {
+    jwt.verify(req.token, 'secretkey', async (err,authData) => {
+        if(err) {
+            res.status(403).json({
+                message:err,
+            })
+        } else {
+            const product = await Product.find();
+            res.render(__dirname + "/views/home.html", {product:product});
+        }
     
-    const product = await Product.find();
-    res.render(__dirname + "/views/home.html", {product:product});
-
+    });
 })
 
 

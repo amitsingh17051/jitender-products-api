@@ -77,7 +77,10 @@
             body:JSON.stringify(data)
         }
         console.log(options);
-        fetch('/login', options);
+        fetch('/login', options).then(response => response.json())
+          .then(data => {
+            location.reload();
+          });
     }
    
 
