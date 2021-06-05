@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" href="/docs/4.0/assets/img/favicons/favicon.ico">
+
+    <title>Signin Template for Bootstrap</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-+0n0xVW2eSR5OomGNYDnhzAbDsOXxcvSN1TPprVMTNDbiYZCxYbOOl7+AMvyTG2x" crossorigin="anonymous">
+
+    <!-- Custom styles for this template -->
+    <link href="signin.css" rel="stylesheet">
+
+    <style>
+
+        .container {
+           
+           
+            
+        }
+
+        #create_product_form label {
+          
+          padding-bottom:3px;
+        }
+
+    </style>
+  </head>
+
+  <body class="">
+    
+    <div class="container mt-5">
+      
+        <div class="row">
+            <div class="col-md-9">
+              
+                <table class="table">
+                  <thead>
+                    <tr>
+                      <th scope="col">#</th>
+                      <th scope="col">Title</th>
+                      <th scope="col">Category</th>
+                      <th scope="col">Price Range</th>
+                      <th scope="col">Product Image</th>
+                      <th scope="col">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <% product.forEach(function(prop){ %>
+                      <tr>
+                        <td scope="row">1</td>
+                        <td><%= prop.title %></td>
+                        <td><%= prop.category %></td>
+                        <td><%= prop.priceRange %></td>
+                        
+                        <td width="100px">
+                          <img width="100%" src="http://localhost:3500/uploads/<%= prop.productImage %>" alt="">
+                        </td>
+                        <td>
+                          <button class="btn btn-sm btn-primary editProduct"  data-product-id="<%= prop._id %>">Edit Product</button> <br>
+                          
+                          <button class="btn btn-sm btn-danger mt-2 deleteProduct"  data-product-id="<%= prop._id %>">Delete Product</button>
+                        </td>
+                      </tr>
+                    <% }); %>
+                    
+                   
+                  </tbody>
+                </table>
+            </div>
+            
+            <div class="col-md-3" style="border-left: 1px solid #ccc ;">
+              <h4>Add Or Update Product</h4>
+              <hr>
+              <form id="create_product_form" enctype='multipart/form-data'>
+                        
+                <div class="form-group">
+                    <label for="title">Title</label>
+                    <input type="text" id="title" class="form-control form-control-sm" name="title" required />
+                </div>
+                <div class="form-group">
+                    <label for="category">category</label>
+                    <input type="text" id="category" class="form-control form-control-sm" name="category" required/>
+                </div>
+                <div class="form-group">
+                  <label for="price_ranges">price range</label>
+                  <div class="row">
+                    <div class="col-md-6">
+                      <input type="number" id="price_range_1" class="form-control form-control-sm" name="price_rang_1" required />
+                    </div>
+                    <div class="col-md-6">
+                      <input type="number" id="price_range_2" class="form-control form-control-sm" name="price_range_2" required />
+                    </div>
+                  </div>
+                  
+                  
+                </div>
+                <div class="form-group">
+                  <label for="productAuthor">Product Author</label>
+                  <input type="text" id="productAuthor" class="form-control form-control-sm" name="productAuthor" required/>
+                </div>
+
+                <div class="form-group">
+                  <label for="minPurchaseQty">Min Buy Qty</label>
+                  <input type="number" id="minPurchaseQty" class="form-control form-control-sm" name="minPurchaseQty" required />
+                </div>
+                <input type="hidden" class="product_id" value="">
+                <div class="form-group">
+                  <label for="productImage">Upload Product image</label>
+                  <input type="file" id="productImage" class="form-control form-control-sm" name="productImages">
+
+                </div>
+                
+                <button type="submit" class="btn btn-warning mt-3">Create Product</button>
+                <button type="button" class="btn btn-success mt-3 reset_from">Reset Form</button>
+              </form>
+            </div>
+        </div>
+    </div>
+
+  </body>
+  <script src="https://code.jquery.com/jquery-3.6.0.slim.js" integrity="sha256-HwWONEZrpuoh951cQD1ov2HUK5zA5DwJ1DNUXaM6FsY=" crossorigin="anonymous"></script>
+  <script>
+   
+    
+   jQuery(document).ready(function(){
+
+      jQuery('.reset_from').on('click', function() {
+        jQuery("#create_product_form")[0].reset();
+        jQuery('.product_id').val('');
+      });
+       
+      jQuery('body').find('.deleteProduct').on('click', function(e) {
+        e.preventDefault();
+        if(jQuery(this).data('product-id') == '') {
+            return false;
+        }
+        jQuery(this).closest('tr').remove();
+        DeleteProduct(jQuery(this).data('product-id'));
+      });
+      jQuery('body').find('.editProduct').on('click', function(){
+        const options = {
+          method : 'Get',
+        }
+        fetch('http://localhost:3500/api/products/'+jQuery(this).data('product-id'), options)
+        .then(response => response.json())
+        .then(data => {
+            let priceRange = data.priceRange.split('-')
+            console.log(data);
+            console.log(priceRange);
+            
+            jQuery('#title').val(data.title);
+            jQuery('#category').val(data.category);
+            jQuery('#price_range_1').val(parseInt(priceRange[0]));
+            jQuery('#price_range_2').val(parseInt(priceRange[1]));
+            jQuery('#productAuthor').val(data.productAuthor);
+            jQuery('#minPurchaseQty').val(data.minPurchaseQty);
+            jQuery('.product_id').val(data._id);
+        })
+      })
+      jQuery('#create_product_form').on('submit', function(e) {
+          e.preventDefault();
+          let ifProductIdAvl = jQuery('.product_id').val();
+          if(ifProductIdAvl !== "") {
+            update_product(ifProductIdAvl);
+          } else {
+            create_product();
+          }
+          
+      })
+
+      function DeleteProduct(product_id) {
+        const options = {
+              method : 'DELETE',
+              headers: {
+                  'Content-Type': 'application/json'
+              },
+          }
+        fetch('http://localhost:3500/api/products/'+product_id, options);
+      }
+    
+      function create_product() {
+          let title = jQuery('#title').val();
+          let category = jQuery('#category').val();
+          let priceRange1 = jQuery('#price_range_1').val();
+          let priceRange2 = jQuery('#price_range_2').val();
+          let priceRange = priceRange1 + ' - ' + priceRange2;
+          let productAuthor = jQuery('#productAuthor').val();
+          let minPurchaseQty = jQuery('#minPurchaseQty').val();
+          let productImage = '';
+          let file =  jQuery('#productImage')[0];
+
+          var form_data = new FormData();
+          if(file.files[0] == undefined) {
+            alert('Please Add Product Image');
+            return false;
+          }
+          form_data.append("productImage", file.files[0]);
+          const options = {
+              method : 'POST',
+              body:form_data
+          }
+          console.log(options)
+          fetch('http://localhost:3500/api/uploadImage/', options)
+          .then(response => response.json())
+          .then(data => {
+
+            productImage = data.productImagePath;
+            const newProduct = {
+                title,
+                category,
+                priceRange,
+                productImage,   
+                productAuthor,
+                minPurchaseQty
+            };
+            let form = jQuery('#create_product_form').serialize();
+            const options = {
+              method : 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify(newProduct)
+            }
+            console.log(options);
+            fetch('http://localhost:3500/api/product/', options)
+            .then(response => response.json())
+            .then(data => {
+              location.reload();
+            })
+            
+          });
+      }
+
+      function update_product(productId) {
+          let title = jQuery('#title').val();
+          let category = jQuery('#category').val();
+          let priceRange1 = jQuery('#price_range_1').val();
+          let priceRange2 = jQuery('#price_range_2').val();
+          let priceRange = priceRange1 + ' - ' + priceRange2;
+          let productAuthor = jQuery('#productAuthor').val();
+          let minPurchaseQty = jQuery('#minPurchaseQty').val();
+          let productImage = '';
+          let file =  jQuery('#productImage')[0];
+          var form_data = new FormData();
+
+          if(file.files[0] == undefined) {
+            alert('Please Add Product Image');
+            return false;
+          }
+          form_data.append("productImage", file.files[0]);
+          const options = {
+              method : 'POST',
+              body:form_data
+          }
+          console.log(options)
+          fetch('http://localhost:3500/api/uploadImage/', options)
+          .then(response => response.json())
+          .then(data => {
+
+            productImage = data.productImagePath;
+            const updateProduct = {
+                title,
+                category,
+                priceRange,
+                productImage,   
+                productAuthor,
+                minPurchaseQty
+            };
+            let form = jQuery('#create_product_form').serialize();
+            const options = {
+              method : 'PATCH',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify(updateProduct)
+            }
+            console.log(options);
+            fetch('http://localhost:3500/api/products/'+productId, options)
+            .then(response => response.json())
+            .then(data => {
+              location.reload();
+            })
+            
+          });
+      }
+
+    })
+     
+     async function genrateImage(file) {
+      
+        var reader = new FileReader();
+        reader.onload = function() {
+          reader.readyState;
+          reader.result;
+        }
+        reader.readAsText(file);
+        return reader;
+      }
+  
+  </script>
+  
+  </html>
