@@ -35,6 +35,12 @@
           padding-bottom:3px;
         }
 
+
+      a.page-link.active {
+          background: #0d6efd;
+          color: white;
+      }
+
     </style>
   </head>
 
@@ -78,6 +84,8 @@
                    
                   </tbody>
                 </table>
+
+                
             </div>
             
             <div class="col-md-3" style="border-left: 1px solid #ccc ;">
@@ -136,6 +144,25 @@
               </form>
             </div>
         </div>
+
+        <nav aria-label="Page navigation example">
+          <ul class="pagination">
+            <%if (prev) { %>
+            <li class="page-item"><a class="page-link" href="/home/?page=<%= prev.page%>"  >Previous</a></li>
+            <% } %>  
+
+            <% for(var i=0; i < pages; i++) { %>
+              <li class="page-item"><a class="page-link <%= (page == i+1) ? 'active': ''  %>" href="/home/?page=<%= i+1%>"><%= i+1%></a></li>
+            <% }; %>
+
+           
+            
+            <%if (next) { %>
+            <li class="page-item"><a class="page-link" href="/home/?page=<%= next.page%>" onclick="<%= (page == pages) ? 'return false;': pages.length %>" >Next</a></li>
+            <% } %> 
+          </ul>
+        </nav>
+
     </div>
 
   </body>
@@ -144,8 +171,8 @@
    
     
    jQuery(document).ready(function(){
-      const hostname = '';
-      // const hostname = 'http://localhost:3500';
+      // const hostname = '';
+      const hostname = 'http://localhost:3500';
       jQuery('.reset_from').on('click', function() {
         jQuery("#create_product_form")[0].reset();
         jQuery('.product_id').val('');

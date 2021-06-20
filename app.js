@@ -60,9 +60,19 @@ const PORT = process.env.PORT || 3500;
 // Get all Products
 app.get('/api/products', async (req, res) => {
     try {
-        const product = await Product.find();    
+
+        const page = parseInt(req.query.page)
+        const limit = parseInt(req.query.limit)
+
+        const startIndex = (page - 1) * limit
+        const endIndex = page * limit;
+
+        
+
+        const product = await Product.find(); 
+          
         res.status(200).json({
-            product:product,
+            product:resultProducts,
         });
         
     } catch (error) {
@@ -123,6 +133,7 @@ app.patch('/api/products/:id',verifyToken, async (req,res) => {
             try {
                 const { title, category, priceRange, productImage, productAuthor, minPurchaseQty } = req.body;
                 const id = req.params.id;
+                
                 
                 const product = await Product.findById(id);
                 console.log(product.productImag)
@@ -375,13 +386,47 @@ app.get('/', (req, res) => {
 
 })
 
-app.get('/home', verifyToken, async (req, res) => {
+app.get('/home', verifyToken, async (req, res,next) => {
     jwt.verify(req.token, 'secretkey', async (err,authData) => {
         if(err) {
             res.redirect('/');
         } else {
-            const product = await Product.find();
-            res.render(__dirname + "/views/home.html", {product:product});
+
+            let page = parseInt(req.query.page)
+            if(isNaN(page)) {
+                page = 1;
+            }
+
+            const limit = 3;
+            const startIndex = (page - 1) * limit
+            const endIndex = page * limit
+
+            const results = {};
+            const product = await Product.find(); 
+
+            results.next = {
+                page: page + 1,
+                limit: limit
+            }
+           
+            results.prev = {
+                page: page - 1,
+                limit: limit
+            }
+            
+            results.currentPage = page;
+            results.totalPages =  Math.ceil(product.length / limit);
+           
+            results.results = product.slice(startIndex,endIndex); 
+            
+            console.log(results)
+            res.render(__dirname + "/views/home.html", {
+                product: results.results,
+                prev:results.prev, 
+                next:results.next,
+                pages: results.totalPages,
+                page: results.currentPage,
+            });
         }
     });
 })
