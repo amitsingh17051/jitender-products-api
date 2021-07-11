@@ -125,9 +125,11 @@
                 </div>
                 <input type="hidden" class="product_id" value="">
                 <div class="form-group">
+                  <div class="preview_image">
+                    <img id="productImagePreview" class="mt-3" src="" alt="" width="100px">
+                  </div>
                   <label for="productImage">Upload Product image</label>
                   <input type="file" id="productImage" class="form-control form-control-sm" name="productImages">
-
                 </div>
                 <img class="loader" src="https://cdn0.iconfinder.com/data/icons/time-date/24/loading-lines-512.png" width="2%" style="
                   display: none;
@@ -196,7 +198,7 @@
             let priceRange = data.priceRange.split('-')
             console.log(data);
             console.log(priceRange);
-            
+            jQuery('#productImagePreview').attr('src', '/uploads/'+ data.productImage);
             jQuery('#title').val(data.title);
             jQuery('#category').val(data.category);
             jQuery('#price_range_1').val(parseInt(priceRange[0]));
@@ -208,11 +210,14 @@
       })
       jQuery('#create_product_form').on('submit', function(e) {
           e.preventDefault();
-
+        console.log('testedd');
+        
           jQuery('.btn-warning').prop('disabled', true);
           jQuery('.loader').css('display','block');
           let ifProductIdAvl = jQuery('.product_id').val();
           if(ifProductIdAvl !== "") {
+            console.log('func run');
+            
             update_product(ifProductIdAvl);
           } else {
             create_product();
@@ -285,6 +290,7 @@
       }
 
       function update_product(productId) {
+
           let title = jQuery('#title').val();
           let category = jQuery('#category').val();
           let priceRange1 = jQuery('#price_range_1').val();
@@ -294,23 +300,42 @@
           let minPurchaseQty = jQuery('#minPurchaseQty').val();
           let productImage = '';
           let file =  jQuery('#productImage')[0];
-          var form_data = new FormData();
+          let form_data = new FormData();
 
-          if(file.files[0] == undefined) {
-            alert('Please Add Product Image');
-            return false;
+          console.log(file.files);
+          
+          if(file.files[0] !== undefined) {
+            console.log('cond true');
+            console.log(file.files[0]);
+            
+            form_data.append("productImage", file.files[0]);
           }
-          form_data.append("productImage", file.files[0]);
+          
+          
+          
+          
           const options = {
               method : 'POST',
-              body:form_data
+              body:Array.from(form_data),
+              headers: {
+                processData: false, 
+                contentType: false 
+              }
           }
+          
+          
           console.log(options)
+          debugger;
           fetch(hostname+'/api/uploadImage/', options)
           .then(response => response.json())
           .then(data => {
 
             productImage = data.productImagePath;
+            console.log(data);
+
+            debugger;
+
+            
             const updateProduct = {
                 title,
                 category,

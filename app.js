@@ -97,7 +97,7 @@ app.use('/help', swaggerUI.serve, swaggerUI.setup(productapiSpecification));
 // Get all Products
 app.get('/api/products', async (req, res) => {
     try {
-        const product = await Product.find(); 
+        const product = await Product.find().sort(['updatedAt', 1]);; 
         // res.status(200).send().json({
         //     product:product,
         // });
@@ -124,7 +124,7 @@ app.get('/api/products/:id', async (req, res) => {
 
 // Create Product 
 app.post('/api/product', verifyToken, async (req, res) => {
-    console.log(req.body)
+    
     jwt.verify(req.token, 'secretkey', async (err,authData) => {
         if(err) {
             res.status(403).json({
@@ -163,25 +163,31 @@ app.patch('/api/products/:id',verifyToken, async (req,res) => {
             try {
                 const { title, category, priceRange, productImage, productAuthor, userId, minPurchaseQty } = req.body;
                 const id = req.params.id;
-                
-                
-                const product = await Product.findById(id);
-                console.log(product.productImag)
-                if(product.productImage !== undefined) {
-                    const pathToFile = __dirname + '/uploads/' + product.productImage;
-                    fs.unlink(pathToFile, function(err) {
-                    if (err) {
-                            throw err;
-                        } else {
-                            console.log("Successfully deleted the file.")
-                        }
-                    })
+                if(productImage) {
+                    const product = await Product.findById(id);
+                    
+                    if(product.productImage !== undefined) {
+                        const pathToFile = __dirname + '/uploads/' + product.productImage;
+                        fs.unlink(pathToFile, function(err) {
+                        if (err) {
+                                throw err;
+                            } else {
+                                console.log("Successfully deleted the file.")
+                            }
+                        })
+                    }
                 }
+                
 
                 if (!mongoose.Types.ObjectId.isValid(id)) {
                     res.status(404).json({id:id});
                 }   
-                const updatedProduct = { title, category, priceRange, productImage, productAuthor, userId, minPurchaseQty, _id: id };
+
+                const updatedProduct = { title, category, priceRange, productAuthor, userId, minPurchaseQty, _id: id };
+                if(productImage) {
+                    updatedProduct.productImage = productImage;
+                }
+
                 await Product.findByIdAndUpdate(id, updatedProduct, { new: true });
                 res.json(updatedProduct);
             } catch(error) {
@@ -208,6 +214,9 @@ app.delete('/api/products/:id', verifyToken, async (req,res) => {
                 const product = await Product.findById(id);
                 if(product.productImage) {
                     const pathToFile = __dirname + '/uploads/' + product.productImage;
+                    if(!pathToFile) {
+                        return false;
+                    }
                     fs.unlink(pathToFile, function(err) {
                     if (err) {
                             throw err
@@ -346,6 +355,7 @@ app.patch('/api/users/:id', async (req,res) => {
 
 // Update Product
 app.post('/api/uploadImage', verifyToken, async (req,res) => {
+    console.log(req.file);
     jwt.verify(req.token, 'secretkey', async (err,authData) => {
         if(err) {
             res.status(403).json({
@@ -354,6 +364,9 @@ app.post('/api/uploadImage', verifyToken, async (req,res) => {
         } else {
             try {
                 //res.send('test');
+                if( req.file.filename == undefined ) {
+                    return false;
+                }
                 upload(req,res, (err) => {
                     if(err) {
                         res.render('/views/home.html', {
@@ -449,7 +462,6 @@ app.get('/home', verifyToken, async (req, res,next) => {
            
             results.results = product.slice(startIndex,endIndex); 
             
-            console.log(results)
             res.render(__dirname + "/views/home.html", {
                 product: results.results,
                 prev:results.prev, 
