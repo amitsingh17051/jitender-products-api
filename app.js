@@ -10,6 +10,24 @@ import jwt from 'jsonwebtoken';
 import ejs from "ejs";
 import Product from './models/products.js';
 import User from './models/users.js';
+import swaggerJsDoc from 'swagger-jsdoc';
+import swaggerUI from 'swagger-ui-express';
+
+
+
+const app = express();
+app.use(cookieParser());
+app.use(bodyParser.json({ limit: "30mb", extended: true }));
+app.use(bodyParser.urlencoded({ limit: "30mb", extended: true }));
+app.use(cors());
+app.engine('html', ejs.renderFile);
+app.set('view engine', 'html');
+
+
+const __dirname = path.resolve(path.dirname(''));
+const CONNECTION_URL = 'mongodb+srv://amitsingh:root@cluster0.iagif.mongodb.net/testproducts?retryWrites=true&w=majority';
+const PORT = process.env.PORT || 3500;
+
 
 const storage = multer.diskStorage({
     destination: './uploads/',
@@ -41,39 +59,50 @@ function checkFileType(file, cb) {
 }
 
 
+const ProductsOptions = {
+    swaggerDefinition: {
+        info: {
+            title: 'Your Product API',
+            version:'1.0.0',
+        },
+    },
+    apis: ['app.js'], 
+};
 
+const productapiSpecification = swaggerJsDoc(ProductsOptions);
+app.use('/help', swaggerUI.serve, swaggerUI.setup(productapiSpecification));
 
-
-const app = express();
-app.use(cookieParser());
-app.use(bodyParser.json({ limit: "30mb", extended: true }));
-app.use(bodyParser.urlencoded({ limit: "30mb", extended: true }));
-app.use(cors());
-app.engine('html', ejs.renderFile);
-app.set('view engine', 'html');
-
-const __dirname = path.resolve(path.dirname(''));
-const CONNECTION_URL = 'mongodb+srv://amitsingh:root@cluster0.iagif.mongodb.net/testproducts?retryWrites=true&w=majority';
-const PORT = process.env.PORT || 3500;
+/**
+ * @swagger
+ * /api/products:
+ *   get:
+ *     description: Get all Products!
+ *     responses:
+ *       200:
+ *         description: Returns a total no of product.
+ * 
+ * /api/products/{productId}:
+ *   get:
+ *     description: Get single product!
+ *     parameters:
+ *     - name: "productId"
+ *       in: "path" 
+ *       type: "string"
+ *     responses:
+ *       200:
+ *         description: Returns a single product with id.
+ */
 
 
 // Get all Products
 app.get('/api/products', async (req, res) => {
     try {
-
-        const page = parseInt(req.query.page)
-        const limit = parseInt(req.query.limit)
-
-        const startIndex = (page - 1) * limit
-        const endIndex = page * limit;
-
-        
-
         const product = await Product.find(); 
-          
-        res.status(200).json({
-            product:resultProducts,
-        });
+        // res.status(200).send().json({
+        //     product:product,
+        // });
+
+        res.send(product);
         
     } catch (error) {
         res.status(404).json({ message: error.message,  content: 'hello2', });
@@ -102,7 +131,7 @@ app.post('/api/product', verifyToken, async (req, res) => {
                 message:err,
             })
         } else {
-            const { title, category, priceRange, productImage, productAuthor, minPurchaseQty } = req.body;
+            const { title, category, priceRange, productImage, productAuthor, userId, minPurchaseQty } = req.body;
             
             const newProduct = new Product({
                 title,
@@ -110,6 +139,7 @@ app.post('/api/product', verifyToken, async (req, res) => {
                 priceRange,
                 productImage,
                 productAuthor,
+                userId,
                 minPurchaseQty
             });
             try {
@@ -131,7 +161,7 @@ app.patch('/api/products/:id',verifyToken, async (req,res) => {
             })
         } else {
             try {
-                const { title, category, priceRange, productImage, productAuthor, minPurchaseQty } = req.body;
+                const { title, category, priceRange, productImage, productAuthor, userId, minPurchaseQty } = req.body;
                 const id = req.params.id;
                 
                 
@@ -141,7 +171,7 @@ app.patch('/api/products/:id',verifyToken, async (req,res) => {
                     const pathToFile = __dirname + '/uploads/' + product.productImage;
                     fs.unlink(pathToFile, function(err) {
                     if (err) {
-                            throw err
+                            throw err;
                         } else {
                             console.log("Successfully deleted the file.")
                         }
@@ -151,7 +181,7 @@ app.patch('/api/products/:id',verifyToken, async (req,res) => {
                 if (!mongoose.Types.ObjectId.isValid(id)) {
                     res.status(404).json({id:id});
                 }   
-                const updatedProduct = { title, category, priceRange, productImage, productAuthor, minPurchaseQty, _id: id };
+                const updatedProduct = { title, category, priceRange, productImage, productAuthor, userId, minPurchaseQty, _id: id };
                 await Product.findByIdAndUpdate(id, updatedProduct, { new: true });
                 res.json(updatedProduct);
             } catch(error) {

@@ -5,8 +5,9 @@ const ProductSchema = new mongoose.Schema({
     priceRange: String,
     productImage:String,
     productAuthor:String,
+    userId: String,
     minPurchaseQty: String,
-});
+},{ timestamps: true });
 
 const Product = mongoose.model('Product', ProductSchema);
 
