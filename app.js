@@ -10,24 +10,6 @@ import jwt from 'jsonwebtoken';
 import ejs from "ejs";
 import Product from './models/products.js';
 import User from './models/users.js';
-import swaggerJsDoc from 'swagger-jsdoc';
-import swaggerUI from 'swagger-ui-express';
-
-
-
-const app = express();
-app.use(cookieParser());
-app.use(bodyParser.json({ limit: "30mb", extended: true }));
-app.use(bodyParser.urlencoded({ limit: "30mb", extended: true }));
-app.use(cors());
-app.engine('html', ejs.renderFile);
-app.set('view engine', 'html');
-
-
-const __dirname = path.resolve(path.dirname(''));
-const CONNECTION_URL = 'mongodb+srv://amitsingh:root@cluster0.iagif.mongodb.net/testproducts?retryWrites=true&w=majority';
-const PORT = process.env.PORT || 3500;
-
 
 const storage = multer.diskStorage({
     destination: './uploads/',
@@ -59,50 +41,29 @@ function checkFileType(file, cb) {
 }
 
 
-const ProductsOptions = {
-    swaggerDefinition: {
-        info: {
-            title: 'Your Product API',
-            version:'1.0.0',
-        },
-    },
-    apis: ['app.js'], 
-};
 
-const productapiSpecification = swaggerJsDoc(ProductsOptions);
-app.use('/help', swaggerUI.serve, swaggerUI.setup(productapiSpecification));
 
-/**
- * @swagger
- * /api/products:
- *   get:
- *     description: Get all Products!
- *     responses:
- *       200:
- *         description: Returns a total no of product.
- * 
- * /api/products/{productId}:
- *   get:
- *     description: Get single product!
- *     parameters:
- *     - name: "productId"
- *       in: "path" 
- *       type: "string"
- *     responses:
- *       200:
- *         description: Returns a single product with id.
- */
+
+const app = express();
+app.use(cookieParser());
+app.use(bodyParser.json({ limit: "30mb", extended: true }));
+app.use(bodyParser.urlencoded({ limit: "30mb", extended: true }));
+app.use(cors());
+app.engine('html', ejs.renderFile);
+app.set('view engine', 'html');
+
+const __dirname = path.resolve(path.dirname(''));
+const CONNECTION_URL = 'mongodb+srv://amitsingh:root@cluster0.iagif.mongodb.net/testproducts?retryWrites=true&w=majority';
+const PORT = process.env.PORT || 3500;
 
 
 // Get all Products
 app.get('/api/products', async (req, res) => {
     try {
-        const product = await Product.find().sort(['updatedAt', 1]);; 
-        // res.status(200).send().json({
-        //     product:product,
-        // });
-
-        res.send(product);
+        const product = await Product.find();    
+        res.status(200).json({
+            product:product,
+        });
         
     } catch (error) {
         res.status(404).json({ message: error.message,  content: 'hello2', });
@@ -124,22 +85,22 @@ app.get('/api/products/:id', async (req, res) => {
 
 // Create Product 
 app.post('/api/product', verifyToken, async (req, res) => {
-    
+    console.log(req.body)
     jwt.verify(req.token, 'secretkey', async (err,authData) => {
         if(err) {
             res.status(403).json({
                 message:err,
             })
         } else {
-            const { title, category, priceRange, productImage, productAuthor, userId, minPurchaseQty } = req.body;
+            const { title, category, priceRange,ageRange, productImage, productAuthor, minPurchaseQty } = req.body;
             
             const newProduct = new Product({
                 title,
                 category,
                 priceRange,
+                ageRange,
                 productImage,
                 productAuthor,
-                userId,
                 minPurchaseQty
             });
             try {
@@ -161,33 +122,26 @@ app.patch('/api/products/:id',verifyToken, async (req,res) => {
             })
         } else {
             try {
-                const { title, category, priceRange, productImage, productAuthor, userId, minPurchaseQty } = req.body;
+                const { title, category, priceRange, ageRange, productImage, productAuthor, minPurchaseQty } = req.body;
                 const id = req.params.id;
-                if(productImage) {
-                    const product = await Product.findById(id);
-                    
-                    if(product.productImage !== undefined) {
-                        const pathToFile = __dirname + '/uploads/' + product.productImage;
-                        fs.unlink(pathToFile, function(err) {
-                        if (err) {
-                                throw err;
-                            } else {
-                                console.log("Successfully deleted the file.")
-                            }
-                        })
-                    }
-                }
                 
+                const product = await Product.findById(id);
+                console.log(product.productImag)
+                if(product.productImage !== undefined) {
+                    const pathToFile = __dirname + '/uploads/' + product.productImage;
+                    fs.unlink(pathToFile, function(err) {
+                    if (err) {
+                            throw err
+                        } else {
+                            console.log("Successfully deleted the file.")
+                        }
+                    })
+                }
 
                 if (!mongoose.Types.ObjectId.isValid(id)) {
                     res.status(404).json({id:id});
                 }   
-
-                const updatedProduct = { title, category, priceRange, productAuthor, userId, minPurchaseQty, _id: id };
-                if(productImage) {
-                    updatedProduct.productImage = productImage;
-                }
-
+                const updatedProduct = { title, category, priceRange, ageRange, productImage, productAuthor, minPurchaseQty, _id: id };
                 await Product.findByIdAndUpdate(id, updatedProduct, { new: true });
                 res.json(updatedProduct);
             } catch(error) {
@@ -214,9 +168,6 @@ app.delete('/api/products/:id', verifyToken, async (req,res) => {
                 const product = await Product.findById(id);
                 if(product.productImage) {
                     const pathToFile = __dirname + '/uploads/' + product.productImage;
-                    if(!pathToFile) {
-                        return false;
-                    }
                     fs.unlink(pathToFile, function(err) {
                     if (err) {
                             throw err
@@ -355,7 +306,6 @@ app.patch('/api/users/:id', async (req,res) => {
 
 // Update Product
 app.post('/api/uploadImage', verifyToken, async (req,res) => {
-    console.log(req.file);
     jwt.verify(req.token, 'secretkey', async (err,authData) => {
         if(err) {
             res.status(403).json({
@@ -364,9 +314,6 @@ app.post('/api/uploadImage', verifyToken, async (req,res) => {
         } else {
             try {
                 //res.send('test');
-                if( req.file.filename == undefined ) {
-                    return false;
-                }
                 upload(req,res, (err) => {
                     if(err) {
                         res.render('/views/home.html', {
@@ -402,8 +349,10 @@ app.post('/login', async (req, res, next) => {
                         message:err,
                     })
                 } else {
-                    res.cookie('jwt', token, {httpOnly: true});
-                    res.redirect('/home');
+                
+                    res.status(200).json({
+                        token:token,
+                    })
                 }
             });
         } else {
@@ -429,46 +378,13 @@ app.get('/', (req, res) => {
 
 })
 
-app.get('/home', verifyToken, async (req, res,next) => {
+app.get('/home', verifyToken, async (req, res) => {
     jwt.verify(req.token, 'secretkey', async (err,authData) => {
         if(err) {
             res.redirect('/');
         } else {
-
-            let page = parseInt(req.query.page)
-            if(isNaN(page)) {
-                page = 1;
-            }
-
-            const limit = 3;
-            const startIndex = (page - 1) * limit
-            const endIndex = page * limit
-
-            const results = {};
-            const product = await Product.find(); 
-
-            results.next = {
-                page: page + 1,
-                limit: limit
-            }
-           
-            results.prev = {
-                page: page - 1,
-                limit: limit
-            }
-            
-            results.currentPage = page;
-            results.totalPages =  Math.ceil(product.length / limit);
-           
-            results.results = product.slice(startIndex,endIndex); 
-            
-            res.render(__dirname + "/views/home.html", {
-                product: results.results,
-                prev:results.prev, 
-                next:results.next,
-                pages: results.totalPages,
-                page: results.currentPage,
-            });
+            const product = await Product.find();
+            res.render(__dirname + "/views/home.html", {product:product});
         }
     });
 })

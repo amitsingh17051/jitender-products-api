@@ -35,12 +35,6 @@
           padding-bottom:3px;
         }
 
-
-      a.page-link.active {
-          background: #0d6efd;
-          color: white;
-      }
-
     </style>
   </head>
 
@@ -71,7 +65,7 @@
                         <td><%= prop.priceRange %></td>
                         
                         <td width="100px">
-                          <img width="100%" src="http://localhost:3500/uploads/<%= prop.productImage %>" alt="">
+                          <img width="100%" src="/uploads/<%= prop.productImage %>" alt="">
                         </td>
                         <td>
                           <button class="btn btn-sm btn-primary editProduct"  data-product-id="<%= prop._id %>">Edit Product</button> <br>
@@ -84,8 +78,6 @@
                    
                   </tbody>
                 </table>
-
-                
             </div>
             
             <div class="col-md-3" style="border-left: 1px solid #ccc ;">
@@ -114,6 +106,18 @@
                   
                   
                 </div>
+
+                <div class="form-group">
+                  <label for="age_ranges">Age range</label>
+                  <div class="row">
+                    <div class="col-md-6">
+                      <input type="number" id="age_range_1" class="form-control form-control-sm" name="age_rang_1" required />
+                    </div>
+                    <div class="col-md-6">
+                      <input type="number" id="age_range_2" class="form-control form-control-sm" name="age_range_2" required />
+                    </div>
+                  </div>
+                </div>
                 <div class="form-group">
                   <label for="productAuthor">Product Author</label>
                   <input type="text" id="productAuthor" class="form-control form-control-sm" name="productAuthor" required/>
@@ -125,11 +129,9 @@
                 </div>
                 <input type="hidden" class="product_id" value="">
                 <div class="form-group">
-                  <div class="preview_image">
-                    <img id="productImagePreview" class="mt-3" src="" alt="" width="100px">
-                  </div>
                   <label for="productImage">Upload Product image</label>
                   <input type="file" id="productImage" class="form-control form-control-sm" name="productImages">
+
                 </div>
                 <img class="loader" src="https://cdn0.iconfinder.com/data/icons/time-date/24/loading-lines-512.png" width="2%" style="
                   display: none;
@@ -146,25 +148,6 @@
               </form>
             </div>
         </div>
-
-        <nav aria-label="Page navigation example">
-          <ul class="pagination">
-            <%if (prev) { %>
-            <li class="page-item"><a class="page-link" href="/home/?page=<%= prev.page%>"  >Previous</a></li>
-            <% } %>  
-
-            <% for(var i=0; i < pages; i++) { %>
-              <li class="page-item"><a class="page-link <%= (page == i+1) ? 'active': ''  %>" href="/home/?page=<%= i+1%>"><%= i+1%></a></li>
-            <% }; %>
-
-           
-            
-            <%if (next) { %>
-            <li class="page-item"><a class="page-link" href="/home/?page=<%= next.page%>" onclick="<%= (page == pages) ? 'return false;': pages.length %>" >Next</a></li>
-            <% } %> 
-          </ul>
-        </nav>
-
     </div>
 
   </body>
@@ -173,8 +156,10 @@
    
     
    jQuery(document).ready(function(){
-      // const hostname = '';
-      const hostname = 'http://localhost:3500';
+      const hostname = '';
+
+
+      // const hostname = 'http://localhost:3500';
       jQuery('.reset_from').on('click', function() {
         jQuery("#create_product_form")[0].reset();
         jQuery('.product_id').val('');
@@ -196,13 +181,18 @@
         .then(response => response.json())
         .then(data => {
             let priceRange = data.priceRange.split('-')
+            let ageRange = data.ageRange.split('-')
             console.log(data);
             console.log(priceRange);
-            jQuery('#productImagePreview').attr('src', '/uploads/'+ data.productImage);
+            
             jQuery('#title').val(data.title);
             jQuery('#category').val(data.category);
             jQuery('#price_range_1').val(parseInt(priceRange[0]));
             jQuery('#price_range_2').val(parseInt(priceRange[1]));
+
+            jQuery('#age_range_1').val(parseInt(ageRange[0]));
+            jQuery('#age_range_2').val(parseInt(ageRange[1]));
+
             jQuery('#productAuthor').val(data.productAuthor);
             jQuery('#minPurchaseQty').val(data.minPurchaseQty);
             jQuery('.product_id').val(data._id);
@@ -210,14 +200,11 @@
       })
       jQuery('#create_product_form').on('submit', function(e) {
           e.preventDefault();
-        console.log('testedd');
-        
+
           jQuery('.btn-warning').prop('disabled', true);
           jQuery('.loader').css('display','block');
           let ifProductIdAvl = jQuery('.product_id').val();
           if(ifProductIdAvl !== "") {
-            console.log('func run');
-            
             update_product(ifProductIdAvl);
           } else {
             create_product();
@@ -242,6 +229,12 @@
           let priceRange1 = jQuery('#price_range_1').val();
           let priceRange2 = jQuery('#price_range_2').val();
           let priceRange = priceRange1 + ' - ' + priceRange2;
+
+          let ageRange1 = jQuery('#age_range_1').val();
+          let ageRange2 = jQuery('#age_range_2').val();
+          let ageRange =ageRange1 + ' - ' +ageRange2;
+
+
           let productAuthor = jQuery('#productAuthor').val();
           let minPurchaseQty = jQuery('#minPurchaseQty').val();
           let productImage = '';
@@ -267,6 +260,7 @@
                 title,
                 category,
                 priceRange,
+                ageRange,
                 productImage,   
                 productAuthor,
                 minPurchaseQty
@@ -290,52 +284,37 @@
       }
 
       function update_product(productId) {
-
           let title = jQuery('#title').val();
           let category = jQuery('#category').val();
           let priceRange1 = jQuery('#price_range_1').val();
           let priceRange2 = jQuery('#price_range_2').val();
           let priceRange = priceRange1 + ' - ' + priceRange2;
+
+          let ageRange1 = jQuery('#age_range_1').val();
+          let ageRange2 = jQuery('#age_range_2').val();
+          let ageRange =ageRange1 + ' - ' +ageRange2;
+
           let productAuthor = jQuery('#productAuthor').val();
           let minPurchaseQty = jQuery('#minPurchaseQty').val();
           let productImage = '';
           let file =  jQuery('#productImage')[0];
-          let form_data = new FormData();
+          var form_data = new FormData();
 
-          console.log(file.files);
-          
-          if(file.files[0] !== undefined) {
-            console.log('cond true');
-            console.log(file.files[0]);
-            
-            form_data.append("productImage", file.files[0]);
+          if(file.files[0] == undefined) {
+            alert('Please Add Product Image');
+            return false;
           }
-          
-          
-          
-          
+          form_data.append("productImage", file.files[0]);
           const options = {
               method : 'POST',
-              body:Array.from(form_data),
-              headers: {
-                processData: false, 
-                contentType: false 
-              }
+              body:form_data
           }
-          
-          
           console.log(options)
-          debugger;
           fetch(hostname+'/api/uploadImage/', options)
           .then(response => response.json())
           .then(data => {
 
             productImage = data.productImagePath;
-            console.log(data);
-
-            debugger;
-
-            
             const updateProduct = {
                 title,
                 category,

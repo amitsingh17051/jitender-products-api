@@ -78,9 +78,15 @@
         }
         console.log(options);
         fetch('/login', options).then(response => response.json())
-          .then(data => {
-              location.reload();
-          });
+        .then(data => {
+            if(data.token == undefined) {
+                alert('Invalid Credentials');
+                return false;
+            }
+            document.cookie = 'jwt='+data.token+'; expires=Sun, 1 Jan 2023 00:00:00 UTC; path=/'
+            window.location.reload();
+
+        })
     }
    
 
