@@ -52,6 +52,7 @@
                       <th scope="col">Title</th>
                       <th scope="col">Category</th>
                       <th scope="col">Price Range</th>
+                      <th scope="col">Age Range</th>
                       <th scope="col">Product Image</th>
                       <th scope="col">Actions</th>
                     </tr>
@@ -63,6 +64,7 @@
                         <td><%= prop.title %></td>
                         <td><%= prop.category %></td>
                         <td><%= prop.priceRange %></td>
+                        <td><%= prop.ageRange %></td>
                         
                         <td width="100px">
                           <img width="100%" src="/uploads/<%= prop.productImage %>" alt="">
@@ -120,7 +122,7 @@
                 </div>
                 <div class="form-group">
                   <label for="productAuthor">Product Author</label>
-                  <input type="text" id="productAuthor" class="form-control form-control-sm" name="productAuthor" required/>
+                  <input type="text" id="productAuthor" class="form-control form-control-sm" name="productAuthor" value="guest" required/>
                 </div>
 
                 <div class="form-group">
@@ -243,6 +245,8 @@
           var form_data = new FormData();
           if(file.files[0] == undefined) {
             alert('Please Add Product Image');
+            jQuery('.btn-warning').prop('disabled', false);
+            jQuery('.loader').css('display','none');
             return false;
           }
           form_data.append("productImage", file.files[0]);
@@ -302,6 +306,8 @@
 
           if(file.files[0] == undefined) {
             alert('Please Add Product Image');
+            jQuery('.btn-warning').prop('disabled', false);
+            jQuery('.loader').css('display','none');
             return false;
           }
           form_data.append("productImage", file.files[0]);
@@ -319,6 +325,7 @@
                 title,
                 category,
                 priceRange,
+                ageRange,
                 productImage,   
                 productAuthor,
                 minPurchaseQty
